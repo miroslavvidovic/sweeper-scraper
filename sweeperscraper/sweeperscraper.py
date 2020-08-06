@@ -176,11 +176,12 @@ def find_gpu_name():
         if "DameWare" not in td.text:
             gpu_list.append(td.text)
     
-    return gpu_list
+    gpu = ', '.join(gpu_list)
+    return str(gpu)
 
 
 def find_software():
-    software = []
+    software_list = []
 
     soft_table = soup.find_all('table')[-2]
 
@@ -190,8 +191,9 @@ def find_software():
         filtered_element = element.text.rstrip()
         # Remove empty entries
         if filtered_element:
-            software.append(filtered_element)
+            software_list.append(filtered_element)
     
+    software = ', '.join(software_list)
     return software
 
 
@@ -222,14 +224,26 @@ for file in files:
         soup = BeautifulSoup(page_content,'lxml')
 
         db = dataset.connect('mysql://admin:root@localhost/inventory')
-        table = db['inventory']
+        table = db['computer']
 
         computername = find_computer_name()
         local_user = find_local_user()
         operating_system = find_operating_system()
+        operating_system_type = find_operating_system_type()
+        operating_system_install_date = find_operating_system_install_date()
+        pc_manufacturer = find_pc_manufacturer()
+        pc_model = find_pc_model()
+        chassis = find_chassis_type()
+        cpu_name = find_cpu_name()
+        cpu_manufacturer = find_cpu_manufacturer()
+        gpu = find_gpu_name()
+        ram = find_total_ram_memory()
+        software = find_software()
         
-        data = dict(computername=computername,local_user=local_user,operating_system=operating_system)
+        data = dict(computername = computername, local_user = local_user, operating_system=operating_system, operating_system_type=operating_system_type,
+            operating_system_install_date = operating_system_install_date, pc_manufacturer = pc_manufacturer, pc_model = pc_model, chassis = chassis,
+            cpu_name = cpu_name, cpu_manufacturer = cpu_manufacturer, gpu = gpu, ram = ram, software = software)
         # potreban upsert
-        # table.insert(data, ['computername'])
+        table.upsert(data, ['computername'])
         # insert radi
 
